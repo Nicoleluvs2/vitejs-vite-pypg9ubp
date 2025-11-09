@@ -1,29 +1,62 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Module from './Module';
 import PdfViewer from './PdfViewer';
 import QuizChallenge from './QuizChallenge';
 import DragDropChallenge from './DragDropChallenge';
 import MiniBossChallenge from './MiniBossChallenge';
 
+// Type definitions
+type Challenge = { type: string; [key: string]: any };
+type ModuleType = {
+  id: number;
+  title: string;
+  content: React.ReactNode;
+  challenges: Challenge[];
+  miniBoss?: any;
+};
+
 function App() {
-  // Example module structure
-  const modules = [
+  const [completedModules, setCompletedModules] = useState<number[]>([]);
+  const [points, setPoints] = useState(0);
+
+  const modules: ModuleType[] = [
     {
       id: 1,
       title: 'Module 1: Sample PDF',
-      content: <PdfViewer file="/path/to/sample.pdf" />,
+      content: <PdfViewer file="/sample.pdf" />,
       challenges: [
-        { type: 'quiz', question: 'What is 2+2?', options: ['3','4','5'], answer: '4' },
+        { type: 'quiz', question: 'What is 2+2?', options: ['3', '4', '5'], answer: '4' },
         { type: 'dragdrop', labels: ['A','B'], dropzones: ['B','A'] }
-      ],
-      miniBoss: null
+      ]
     },
+    {
+      id: 2,
+      title: 'Module 2: Next Section',
+      content: <PdfViewer file="/sample.pdf" />,
+      challenges: [
+        { type: 'quiz', question: 'What color is the sky?', options: ['Blue','Red'], answer: 'Blue' }
+      ]
+    }
   ];
 
+  const handleModuleComplete = (moduleId: number, earnedPoints: number) => {
+    if (!completedModules.includes(moduleId)) {
+      setCompletedModules([...completedModules, moduleId]);
+      setPoints(points + earnedPoints);
+    }
+  };
+
   return (
-    <div>
-      {modules.map((module) => (
-        <Module key={module.id} module={module} isUnlocked={true} />
+    <div style={{ padding: '20px' }}>
+      <h1>Gamified PDF Learning App</h1>
+      <p>Points: {points}</p>
+      {modules.map((mod, index) => (
+        <Module
+          key={mod.id}
+          module={mod}
+          isUnlocked={index === 0 || completedModules.includes(modules[index - 1].id)}
+          onComplete={(earnedPoints: number) => handleModuleComplete(mod.id, earnedPoints)}
+        />
       ))}
     </div>
   );
